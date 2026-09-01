@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: novacrm_db
+      POSTGRES_USER: novacrm_user
+      POSTGRES_PASSWORD: novacrm_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - novacrm_pgdata:/var/lib/postgresql/data
+
+volumes:
+  novacrm_pgdata:

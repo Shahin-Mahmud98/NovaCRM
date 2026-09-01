@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %} · NovaCRM</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-shell">
+    {% if user.is_authenticated %}
+    <aside class="sidebar">
+      <div class="brand">Nova<span>CRM</span></div>
+      <nav>
+        <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">📊 Dashboard</a>
+        <a href="{% url 'contact_list' %}" class="{% if 'contact' in request.resolver_match.url_name %}active{% endif %}">👤 Contacts</a>
+        <a href="{% url 'company_list' %}" class="{% if 'company' in request.resolver_match.url_name %}active{% endif %}">🏢 Companies</a>
+        <a href="{% url 'deal_board' %}" class="{% if 'deal' in request.resolver_match.url_name %}active{% endif %}">💰 Deals</a>
+        <a href="{% url 'task_list' %}" class="{% if 'task' in request.resolver_match.url_name %}active{% endif %}">✅ Tasks</a>
+        <a href="{% url 'reports' %}" class="{% if 'reports' in request.resolver_match.url_name %}active{% endif %}">📈 Reports</a>
+        <a href="/admin/">⚙️ Admin</a>
+      </nav>
+      <div class="user-box">
+        Signed in as <strong>{{ user.username }}</strong>
+        <span class="badge {% if user.is_staff or user.is_superuser %}badge-customer{% else %}badge-lead{% endif %}" style="margin-left:6px;">
+          {% if user.is_staff or user.is_superuser %}Manager{% else %}Rep{% endif %}
+        </span><br>
+        <a href="{% url 'logout' %}">Log out</a>
+      </div>
+    </aside>
+    {% endif %}
+
+    <div class="main">
+      {% if user.is_authenticated %}
+      <div class="topbar">
+        <form action="{% url 'global_search' %}" method="get">
+          <input type="text" name="q" class="form-control" placeholder="Search contacts, companies, deals..." value="{{ request.GET.q|default:'' }}">
+        </form>
+        <a href="{% url 'deal_create' %}" class="btn btn-primary">+ New Deal</a>
+      </div>
+      {% endif %}
+      <div class="content">
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}<div class="alert">{{ message }}</div>{% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

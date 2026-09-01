@@ -1,0 +1,26 @@
+<div class="card">
+  <h3 style="margin-top:0;">Activity</h3>
+  <form method="post" action="{% url 'add_activity' %}" style="margin-bottom:18px;">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    {% if object_type == 'contact' %}<input type="hidden" name="contact_id" value="{{ object.pk }}">{% endif %}
+    {% if object_type == 'deal' %}<input type="hidden" name="deal_id" value="{{ object.pk }}">{% endif %}
+    {% if object_type == 'company' %}<input type="hidden" name="company_id" value="{{ object.pk }}">{% endif %}
+    <div class="form-group">
+      {{ activity_form.activity_type }}
+    </div>
+    <div class="form-group">
+      {{ activity_form.content }}
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Log activity</button>
+  </form>
+
+  {% for a in activities %}
+    <div class="timeline-item">
+      <strong>{{ a.get_activity_type_display }}</strong> — {{ a.content }}
+      <div class="meta">{{ a.created_by.username|default:"System" }} · {{ a.created_at|timesince }} ago</div>
+    </div>
+  {% empty %}
+    <p class="empty-state">No activity logged yet.</p>
+  {% endfor %}
+</div>

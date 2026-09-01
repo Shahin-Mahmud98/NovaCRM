@@ -1,0 +1,111 @@
+{% extends 'crm/base.html' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header no-print">
+  <h1>Reports</h1>
+  <div>
+    <button onclick="window.print()" class="btn btn-outline">🖨️ Print</button>
+    <a href="{% url 'reports_export_csv' %}" class="btn btn-outline">⬇ CSV</a>
+    <a href="{% url 'reports_export_excel' %}" class="btn btn-outline">⬇ Excel</a>
+    <a href="{% url 'reports_export_pdf' %}" class="btn btn-primary">⬇ PDF</a>
+  </div>
+</div>
+
+<div class="print-header" style="display:none;">
+  <h1>NovaCRM Report</h1>
+  <p>{% if is_manager %}Whole team{% else %}Your records only{% endif %} · Generated {% now "F j, Y" %}</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="label">Open Deals</div><div class="value">{{ open_deal_count }}</div></div>
+  <div class="stat-card"><div class="label">Open Pipeline Value</div><div class="value">${{ open_deal_value|floatformat:0 }}</div></div>
+  <div class="stat-card"><div class="label">Won Revenue</div><div class="value">${{ won_deal_value|floatformat:0 }}</div></div>
+  <div class="stat-card"><div class="label">Lost Value</div><div class="value">${{ lost_deal_value|floatformat:0 }}</div></div>
+  <div class="stat-card"><div class="label">Contacts</div><div class="value">{{ contact_count }}</div></div>
+  <div class="stat-card"><div class="label">Companies</div><div class="value">{{ company_count }}</div></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Pipeline by Stage</h3>
+  <table class="data-table">
+    <thead><tr><th>Stage</th><th>Open Deals</th><th>Value</th></tr></thead>
+    <tbody>
+      {% for stage in stage_summary %}
+      <tr><td>{{ stage.name }}</td><td>{{ stage.deal_count }}</td><td>${{ stage.stage_value|default:0|floatformat:0 }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_manager and rep_summary %}
+<div class="card">
+  <h3 style="margin-top:0;">Open Pipeline by Rep</h3>
+  <table class="data-table">
+    <thead><tr><th>Rep</th><th>Open Deals</th><th>Value</th></tr></thead>
+    <tbody>
+      {% for r in rep_summary %}
+      <tr><td>{{ r.owner__username|default:"Unassigned" }}</td><td>{{ r.deal_count }}</td><td>${{ r.total_value|default:0|floatformat:0 }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3 style="margin-top:0;">Deals ({{ deals|length }})</h3>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Company</th><th>Amount</th><th>Stage</th><th>Status</th><th>Owner</th></tr></thead>
+    <tbody>
+      {% for d in deals %}
+      <tr>
+        <td>{{ d.name }}</td><td>{{ d.company|default:"—" }}</td><td>${{ d.amount|floatformat:0 }}</td>
+        <td>{{ d.stage }}</td><td><span class="badge badge-{{ d.status }}">{{ d.get_status_display }}</span></td>
+        <td>{{ d.owner|default:"—" }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="6" class="empty-state">No deals.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Contacts ({{ contacts|length }})</h3>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Lifecycle Stage</th></tr></thead>
+    <tbody>
+      {% for c in contacts %}
+      <tr><td>{{ c.full_name }}</td><td>{{ c.email|default:"—" }}</td><td>{{ c.company|default:"—" }}</td>
+        <td><span class="badge badge-{{ c.lifecycle_stage }}">{{ c.get_lifecycle_stage_display }}</span></td></tr>
+      {% empty %}<tr><td colspan="4" class="empty-state">No contacts.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Companies ({{ companies|length }})</h3>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Industry</th><th>City</th><th>Open Deal Value</th></tr></thead>
+    <tbody>
+      {% for co in companies %}
+      <tr><td>{{ co.name }}</td><td>{{ co.industry|default:"—" }}</td><td>{{ co.city|default:"—" }}</td><td>${{ co.open_deal_value|floatformat:0 }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="empty-state">No companies.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Tasks ({{ tasks|length }})</h3>
+  <table class="data-table">
+    <thead><tr><th>Title</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Assigned To</th></tr></thead>
+    <tbody>
+      {% for t in tasks %}
+      <tr>
+        <td>{{ t.title }}</td><td>{{ t.due_date|date:"M j, Y g:i A"|default:"—" }}</td>
+        <td><span class="badge badge-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+        <td><span class="badge badge-{{ t.status }}">{{ t.get_status_display }}</span></td>
+        <td>{{ t.assigned_to|default:"—" }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="empty-state">No tasks.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

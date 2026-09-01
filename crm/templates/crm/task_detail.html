@@ -1,0 +1,28 @@
+{% extends 'crm/base.html' %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ task.title }}</h1>
+  <div>
+    {% if task.status != 'completed' %}
+    <form method="post" action="{% url 'task_complete' task.pk %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">Mark complete</button>
+    </form>
+    {% endif %}
+    <a href="{% url 'task_update' task.pk %}" class="btn btn-outline">Edit</a>
+    <a href="{% url 'task_delete' task.pk %}" class="btn btn-danger">Delete</a>
+  </div>
+</div>
+
+<div class="card" style="max-width:640px;">
+  <div class="info-row"><span class="label">Status</span><span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span></div>
+  <div class="info-row"><span class="label">Priority</span><span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span></div>
+  <div class="info-row"><span class="label">Due Date</span><span>{{ task.due_date|date:"M j, Y g:i A"|default:"—" }}</span></div>
+  <div class="info-row"><span class="label">Assigned To</span><span>{{ task.assigned_to|default:"—" }}</span></div>
+  <div class="info-row"><span class="label">Contact</span><span>{% if task.contact %}<a href="{{ task.contact.get_absolute_url }}">{{ task.contact }}</a>{% else %}—{% endif %}</span></div>
+  <div class="info-row"><span class="label">Deal</span><span>{% if task.deal %}<a href="{{ task.deal.get_absolute_url }}">{{ task.deal }}</a>{% else %}—{% endif %}</span></div>
+  <div class="info-row"><span class="label">Company</span><span>{% if task.company %}<a href="{{ task.company.get_absolute_url }}">{{ task.company }}</a>{% else %}—{% endif %}</span></div>
+  {% if task.description %}<p style="margin-top:12px;">{{ task.description }}</p>{% endif %}
+</div>
+{% endblock %}

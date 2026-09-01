@@ -1,0 +1,78 @@
+{% extends 'crm/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <span style="color:var(--text-light);font-size:0.85rem;">
+    {% if is_manager %}Showing data for the whole team{% else %}Showing only records you own{% endif %}
+  </span>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="label">Contacts</div><div class="value">{{ contact_count }}</div></div>
+  <div class="stat-card"><div class="label">Companies</div><div class="value">{{ company_count }}</div></div>
+  <div class="stat-card"><div class="label">Open Deals</div><div class="value">{{ open_deal_count }}</div></div>
+  <div class="stat-card"><div class="label">Open Pipeline Value</div><div class="value">${{ open_deal_value|floatformat:0 }}</div></div>
+  <div class="stat-card"><div class="label">Won Revenue</div><div class="value">${{ won_deal_value|floatformat:0 }}</div></div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card">
+      <h3 style="margin-top:0;">Pipeline by Stage</h3>
+      {% for stage in stage_breakdown %}
+        <div class="info-row">
+          <span class="label">{{ stage.name }} ({{ stage.deal_count }} deals)</span>
+          <strong>${{ stage.stage_value|default:0|floatformat:0 }}</strong>
+        </div>
+      {% endfor %}
+      <a href="{% url 'deal_board' %}" class="btn btn-outline btn-sm" style="margin-top:12px;">View pipeline board →</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Recent Activity</h3>
+      {% for a in recent_activities %}
+        <div class="timeline-item">
+          <strong>{{ a.get_activity_type_display }}</strong> — {{ a.content|truncatechars:100 }}
+          <div class="meta">
+            {{ a.created_by.username|default:"System" }} · {{ a.created_at|timesince }} ago
+            {% if a.contact %} · <a href="{% url 'contact_detail' a.contact.pk %}">{{ a.contact }}</a>{% endif %}
+            {% if a.deal %} · <a href="{% url 'deal_detail' a.deal.pk %}">{{ a.deal }}</a>{% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p class="empty-state">No activity yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3 style="margin-top:0;">Tasks Due Today</h3>
+      {% for t in tasks_due_today %}
+        <div class="info-row"><a href="{% url 'task_detail' t.pk %}">{{ t.title }}</a><span class="badge badge-{{ t.priority }}">{{ t.get_priority_display }}</span></div>
+      {% empty %}
+        <p class="empty-state">Nothing due today 🎉</p>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Overdue Tasks</h3>
+      {% for t in overdue_tasks %}
+        <div class="info-row"><a href="{% url 'task_detail' t.pk %}">{{ t.title }}</a><span class="badge badge-high">Overdue</span></div>
+      {% empty %}
+        <p class="empty-state">No overdue tasks.</p>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Newest Contacts</h3>
+      {% for c in recent_contacts %}
+        <div class="info-row"><a href="{% url 'contact_detail' c.pk %}">{{ c.full_name }}</a><span class="badge badge-{{ c.lifecycle_stage }}">{{ c.get_lifecycle_stage_display }}</span></div>
+      {% empty %}
+        <p class="empty-state">No contacts yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

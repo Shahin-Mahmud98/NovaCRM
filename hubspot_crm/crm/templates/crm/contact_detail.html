@@ -1,0 +1,44 @@
+{% extends 'crm/base.html' %}
+{% block title %}{{ contact.full_name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ contact.full_name }}</h1>
+  <div>
+    <a href="{% url 'contact_update' contact.pk %}" class="btn btn-outline">Edit</a>
+    <a href="{% url 'contact_delete' contact.pk %}" class="btn btn-danger">Delete</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card">
+      <h3 style="margin-top:0;">Details</h3>
+      <div class="info-row"><span class="label">Email</span><span>{{ contact.email|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Phone</span><span>{{ contact.phone|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Job Title</span><span>{{ contact.job_title|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Company</span><span>{% if contact.company %}<a href="{{ contact.company.get_absolute_url }}">{{ contact.company }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="label">Lifecycle Stage</span><span class="badge badge-{{ contact.lifecycle_stage }}">{{ contact.get_lifecycle_stage_display }}</span></div>
+      <div class="info-row"><span class="label">Owner</span><span>{{ contact.owner|default:"—" }}</span></div>
+      {% if contact.notes %}<p style="margin-top:12px;">{{ contact.notes }}</p>{% endif %}
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Deals</h3>
+      {% for deal in deals %}
+        <div class="info-row"><a href="{{ deal.get_absolute_url }}">{{ deal.name }}</a><span>${{ deal.amount|floatformat:0 }} · {{ deal.stage }}</span></div>
+      {% empty %}<p class="empty-state">No deals yet.</p>{% endfor %}
+      <a href="{% url 'deal_create' %}" class="btn btn-outline btn-sm" style="margin-top:8px;">+ New deal</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Tasks</h3>
+      {% for task in tasks %}
+        <div class="info-row"><a href="{{ task.get_absolute_url }}">{{ task.title }}</a><span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span></div>
+      {% empty %}<p class="empty-state">No tasks yet.</p>{% endfor %}
+      <a href="{% url 'task_create' %}" class="btn btn-outline btn-sm" style="margin-top:8px;">+ New task</a>
+    </div>
+  </div>
+
+  {% include 'crm/_activity_panel.html' with object=contact object_type='contact' %}
+</div>
+{% endblock %}

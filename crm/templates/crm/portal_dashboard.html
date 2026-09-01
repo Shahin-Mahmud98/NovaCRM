@@ -1,0 +1,44 @@
+{% extends 'crm/portal_base.html' %}
+{% block title %}{{ company.name }} Portal{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ company.name }}</h1>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="label">Open Deals</div><div class="value">{{ open_deal_count }}</div></div>
+  <div class="stat-card"><div class="label">Open Value</div><div class="value">${{ open_deal_value|floatformat:0 }}</div></div>
+  <div class="stat-card"><div class="label">Won Revenue</div><div class="value">${{ won_deal_value|floatformat:0 }}</div></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Your Deals</h3>
+  <table class="data-table">
+    <thead><tr><th>Deal</th><th>Amount</th><th>Stage</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for d in deals %}
+      <tr>
+        <td>{{ d.name }}</td>
+        <td>${{ d.amount|floatformat:0 }}</td>
+        <td>{{ d.stage }}</td>
+        <td><span class="badge badge-{{ d.status }}">{{ d.get_status_display }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="empty-state">No deals yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Recent Activity</h3>
+  {% for a in activities %}
+    <div class="timeline-item">
+      <strong>{{ a.get_activity_type_display }}</strong> — {{ a.content }}
+      <div class="meta">{{ a.created_at|timesince }} ago</div>
+    </div>
+  {% empty %}
+    <p class="empty-state">No activity logged yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

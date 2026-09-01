@@ -1,0 +1,45 @@
+{% extends 'crm/base.html' %}
+{% block title %}{{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ company.name }}</h1>
+  <div>
+    <a href="{% url 'company_update' company.pk %}" class="btn btn-outline">Edit</a>
+    <a href="{% url 'company_delete' company.pk %}" class="btn btn-danger">Delete</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card">
+      <h3 style="margin-top:0;">Details</h3>
+      <div class="info-row"><span class="label">Industry</span><span>{{ company.industry|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Website</span><span>{% if company.website %}<a href="{{ company.website }}" target="_blank">{{ company.website }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="label">Phone</span><span>{{ company.phone|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Location</span><span>{{ company.city|default:"—" }}{% if company.state %}, {{ company.state }}{% endif %} {{ company.country }}</span></div>
+      <div class="info-row"><span class="label">Employees</span><span>{{ company.employees_count|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Annual Revenue</span><span>{% if company.annual_revenue %}${{ company.annual_revenue|floatformat:0 }}{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="label">Owner</span><span>{{ company.owner|default:"—" }}</span></div>
+      {% if company.description %}<p style="margin-top:12px;">{{ company.description }}</p>{% endif %}
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Contacts ({{ contacts|length }})</h3>
+      {% for c in contacts %}
+        <div class="info-row"><a href="{{ c.get_absolute_url }}">{{ c.full_name }}</a><span class="badge badge-{{ c.lifecycle_stage }}">{{ c.get_lifecycle_stage_display }}</span></div>
+      {% empty %}<p class="empty-state">No contacts yet.</p>{% endfor %}
+      <a href="{% url 'contact_create' %}" class="btn btn-outline btn-sm" style="margin-top:8px;">+ New contact</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Deals ({{ deals|length }})</h3>
+      {% for deal in deals %}
+        <div class="info-row"><a href="{{ deal.get_absolute_url }}">{{ deal.name }}</a><span>${{ deal.amount|floatformat:0 }} · {{ deal.stage }}</span></div>
+      {% empty %}<p class="empty-state">No deals yet.</p>{% endfor %}
+      <a href="{% url 'deal_create' %}" class="btn btn-outline btn-sm" style="margin-top:8px;">+ New deal</a>
+    </div>
+  </div>
+
+  {% include 'crm/_activity_panel.html' with object=company object_type='company' %}
+</div>
+{% endblock %}

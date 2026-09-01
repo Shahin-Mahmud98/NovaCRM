@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Portal{% endblock %} · NovaCRM</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" style="width:200px;">
+      <div class="brand">Nova<span>CRM</span></div>
+      <div style="padding:16px 20px;color:#c6d3e0;font-size:0.8rem;border-bottom:1px solid rgba(255,255,255,0.08);">
+        Client Portal
+      </div>
+      <nav>
+        <a href="{% url 'portal_dashboard' %}" class="active">🏠 My Dashboard</a>
+      </nav>
+      <div class="user-box">
+        Signed in as <strong>{{ user.username }}</strong>
+        <span class="badge badge-customer" style="margin-left:6px;">Client</span><br>
+        <a href="{% url 'logout' %}">Log out</a>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="content">
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}<div class="alert">{{ message }}</div>{% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

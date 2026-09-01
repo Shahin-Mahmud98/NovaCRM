@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log in · NovaCRM</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; height: 100vh; background: var(--navy); }
+    .login-card { background: #fff; padding: 36px; border-radius: 8px; width: 340px; }
+    .login-card h1 { font-size: 1.3rem; margin-bottom: 4px; }
+    .login-card .brand-mark { color: var(--orange); }
+    .login-card p.sub { color: var(--text-light); font-size: 0.85rem; margin-top: 0; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Nova<span class="brand-mark">CRM</span></h1>
+    <p class="sub">Log in to your workspace</p>
+    {% if form.errors %}<div class="messages"><div class="alert" style="background:#f9d0cb;color:#b8261a;">Invalid username or password.</div></div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Username</label>
+        {{ form.username }}
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Log in</button>
+    </form>
+    <p style="font-size:0.78rem;color:var(--text-light);margin-top:16px;">
+      Demo credentials: <strong>admin</strong> / <strong>admin123</strong> (after running <code>seed_data</code>)
+    </p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% extends 'crm/base.html' %}
+{% block title %}Tasks{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Tasks <span style="color:var(--text-light);font-weight:400;font-size:1rem;">({{ paginator.count }})</span></h1>
+  <a href="{% url 'task_create' %}" class="btn btn-primary">+ Add Task</a>
+</div>
+
+<div class="card" style="padding:12px 18px;">
+  <form method="get" style="display:flex;gap:10px;">
+    <select name="status" class="form-control" style="max-width:220px;">
+      <option value="">All statuses</option>
+      <option value="not_started" {% if request.GET.status == 'not_started' %}selected{% endif %}>Not Started</option>
+      <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+      <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+    </select>
+    <button class="btn btn-outline" type="submit">Filter</button>
+  </form>
+</div>
+
+<table class="data-table">
+  <thead><tr><th>Title</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Assigned To</th><th></th></tr></thead>
+  <tbody>
+    {% for task in tasks %}
+    <tr>
+      <td><a href="{{ task.get_absolute_url }}">{{ task.title }}</a></td>
+      <td>{{ task.due_date|date:"M j, Y g:i A"|default:"—" }} {% if task.is_overdue %}<span class="badge badge-high">Overdue</span>{% endif %}</td>
+      <td><span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+      <td><span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span></td>
+      <td>{{ task.assigned_to|default:"—" }}</td>
+      <td>
+        {% if task.status != 'completed' %}
+        <form method="post" action="{% url 'task_complete' task.pk %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline btn-sm">Mark done</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="empty-state">No tasks found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include 'crm/_pagination.html' %}
+{% endblock %}

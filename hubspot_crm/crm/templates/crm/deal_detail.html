@@ -1,0 +1,36 @@
+{% extends 'crm/base.html' %}
+{% block title %}{{ deal.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ deal.name }}</h1>
+  <div>
+    <a href="{% url 'deal_update' deal.pk %}" class="btn btn-outline">Edit</a>
+    <a href="{% url 'deal_delete' deal.pk %}" class="btn btn-danger">Delete</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card">
+      <h3 style="margin-top:0;">Details</h3>
+      <div class="info-row"><span class="label">Amount</span><span><strong>${{ deal.amount|floatformat:0 }}</strong></span></div>
+      <div class="info-row"><span class="label">Stage</span><span class="badge badge-open">{{ deal.stage }}</span></div>
+      <div class="info-row"><span class="label">Status</span><span class="badge badge-{{ deal.status }}">{{ deal.get_status_display }}</span></div>
+      <div class="info-row"><span class="label">Close Date</span><span>{{ deal.close_date|default:"—" }}</span></div>
+      <div class="info-row"><span class="label">Company</span><span>{% if deal.company %}<a href="{{ deal.company.get_absolute_url }}">{{ deal.company }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="label">Contact</span><span>{% if deal.contact %}<a href="{{ deal.contact.get_absolute_url }}">{{ deal.contact }}</a>{% else %}—{% endif %}</span></div>
+      <div class="info-row"><span class="label">Owner</span><span>{{ deal.owner|default:"—" }}</span></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">Tasks</h3>
+      {% for task in tasks %}
+        <div class="info-row"><a href="{{ task.get_absolute_url }}">{{ task.title }}</a><span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span></div>
+      {% empty %}<p class="empty-state">No tasks yet.</p>{% endfor %}
+      <a href="{% url 'task_create' %}" class="btn btn-outline btn-sm" style="margin-top:8px;">+ New task</a>
+    </div>
+  </div>
+
+  {% include 'crm/_activity_panel.html' with object=deal object_type='deal' %}
+</div>
+{% endblock %}

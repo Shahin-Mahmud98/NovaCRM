@@ -1,0 +1,26 @@
+{% extends 'crm/base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Search results for "{{ query }}"</h1></div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Contacts</h3>
+  {% for c in contacts %}
+    <div class="info-row"><a href="{{ c.get_absolute_url }}">{{ c.full_name }}</a><span>{{ c.email }}</span></div>
+  {% empty %}<p class="empty-state">No matching contacts.</p>{% endfor %}
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Companies</h3>
+  {% for c in companies %}
+    <div class="info-row"><a href="{{ c.get_absolute_url }}">{{ c.name }}</a><span>{{ c.industry }}</span></div>
+  {% empty %}<p class="empty-state">No matching companies.</p>{% endfor %}
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Deals</h3>
+  {% for d in deals %}
+    <div class="info-row"><a href="{{ d.get_absolute_url }}">{{ d.name }}</a><span>${{ d.amount|floatformat:0 }}</span></div>
+  {% empty %}<p class="empty-state">No matching deals.</p>{% endfor %}
+</div>
+{% endblock %}

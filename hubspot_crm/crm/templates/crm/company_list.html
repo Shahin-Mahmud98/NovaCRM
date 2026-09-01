@@ -1,0 +1,34 @@
+{% extends 'crm/base.html' %}
+{% block title %}Companies{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Companies <span style="color:var(--text-light);font-weight:400;font-size:1rem;">({{ paginator.count }})</span></h1>
+  <a href="{% url 'company_create' %}" class="btn btn-primary">+ Add Company</a>
+</div>
+
+<div class="card" style="padding:12px 18px;">
+  <form method="get" style="display:flex;gap:10px;">
+    <input type="text" name="q" class="form-control" placeholder="Search company name" value="{{ request.GET.q|default:'' }}">
+    <button class="btn btn-outline" type="submit">Search</button>
+  </form>
+</div>
+
+<table class="data-table">
+  <thead><tr><th>Name</th><th>Industry</th><th>City</th><th>Open Deal Value</th><th>Owner</th></tr></thead>
+  <tbody>
+    {% for company in companies %}
+    <tr>
+      <td><a href="{{ company.get_absolute_url }}">{{ company.name }}</a></td>
+      <td>{{ company.industry|default:"—" }}</td>
+      <td>{{ company.city|default:"—" }}</td>
+      <td>${{ company.open_deal_value|floatformat:0 }}</td>
+      <td>{{ company.owner|default:"—" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="empty-state">No companies found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include 'crm/_pagination.html' %}
+{% endblock %}

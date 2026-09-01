@@ -1,0 +1,37 @@
+{% extends 'crm/base.html' %}
+{% load humanize static %}
+{% block title %}Deals{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Deal Pipeline</h1>
+  <a href="{% url 'deal_create' %}" class="btn btn-primary">+ New Deal</a>
+</div>
+
+<div class="kanban">
+  {% for stage in stages %}
+  <div class="kanban-column">
+    <div class="kanban-column-header">
+      {{ stage.name }}
+      <span class="stage-value">{{ stage.deals.count }} deals · ${{ stage.stage_value|default:0|floatformat:0 }}</span>
+    </div>
+    <div class="kanban-cards" data-stage-id="{{ stage.pk }}">
+      {% for deal in stage.visible_deals %}
+        <div class="kanban-card" data-deal-id="{{ deal.pk }}">
+          <a href="{{ deal.get_absolute_url }}" class="deal-name">{{ deal.name }}</a>
+          <div class="deal-amount">${{ deal.amount|floatformat:0 }}</div>
+          <div class="deal-company">{{ deal.company|default:"" }}</div>
+        </div>
+      {% endfor %}
+    </div>
+    <div style="padding:8px 10px;">
+      <a href="{% url 'deal_create' %}?stage={{ stage.pk }}" class="btn btn-outline btn-sm" style="width:100%;text-align:center;">+ Add deal</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<script src="{% static 'js/kanban.js' %}"></script>
+<script>
+  initKanban("{% url 'deal_move' 0 %}", "{{ csrf_token }}");
+</script>
+{% endblock %}
