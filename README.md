@@ -66,6 +66,33 @@ To add a new rep: Django admin → **Users → Add user**, set a username and
 password, leave "Staff status" unchecked. To add a manager: same, but check
 "Staff status".
 
+## AI features (powered by Claude)
+
+Four AI-assisted features, all using Anthropic's Claude API:
+
+- **Summarize** — on any Contact or Deal page, click "Summarize" for a
+  3-5 sentence brief of that record's activity and status.
+- **Draft Follow-up** — generates a short follow-up email based on the
+  record's context (deal amount, stage, recent activity).
+- **Suggest Next Action** — on a Deal page, get one concrete next step
+  the AI thinks you should take, with a reason why.
+- **AI Assistant** (sidebar link) — a chat interface where you can ask
+  free-form questions about your own CRM data ("which deals are closing
+  this month?", "what's overdue?"). It only sees data the logged-in user
+  has access to — same rep-vs-manager rule as the rest of the CRM.
+
+**Setup:** add your key to `.env`:
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+Get one at https://console.anthropic.com/settings/keys. Without a key, every
+AI button shows a friendly "not configured" message instead of erroring —
+the rest of the CRM works completely normally either way.
+
+**Cost note:** each AI action is a small, focused API call (a short summary
+of one record, or a chat turn) — not sending your whole database. Usage is
+billed by Anthropic per your account's standard API pricing.
+
 ## Client portal (giving a company's own employee a login)
 
 A company's employee, manager, or owner (e.g. someone at Acme Robotics) can

@@ -33,4 +33,9 @@
 
   {% include 'crm/_activity_panel.html' with object=deal object_type='deal' %}
 </div>
+
+<div class="detail-grid">
+  <div></div>
+  {% include 'crm/_ai_panel.html' with ai_summary_url=ai_summary_url ai_draft_url=ai_draft_url ai_next_action_url=ai_next_action_url show_next_action=True %}
+</div>
 {% endblock %}

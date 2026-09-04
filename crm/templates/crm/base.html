@@ -20,6 +20,7 @@
         <a href="{% url 'deal_board' %}" class="{% if 'deal' in request.resolver_match.url_name %}active{% endif %}">💰 Deals</a>
         <a href="{% url 'task_list' %}" class="{% if 'task' in request.resolver_match.url_name %}active{% endif %}">✅ Tasks</a>
         <a href="{% url 'reports' %}" class="{% if 'reports' in request.resolver_match.url_name %}active{% endif %}">📈 Reports</a>
+        <a href="{% url 'ai_chat' %}" class="{% if 'ai_chat' in request.resolver_match.url_name %}active{% endif %}">✨ AI Assistant</a>
         <a href="/admin/">⚙️ Admin</a>
       </nav>
       <div class="user-box">
@@ -27,7 +28,10 @@
         <span class="badge {% if user.is_staff or user.is_superuser %}badge-customer{% else %}badge-lead{% endif %}" style="margin-left:6px;">
           {% if user.is_staff or user.is_superuser %}Manager{% else %}Rep{% endif %}
         </span><br>
-        <a href="{% url 'logout' %}">Log out</a>
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="link-button">Log out</button>
+        </form>
       </div>
     </aside>
     {% endif %}

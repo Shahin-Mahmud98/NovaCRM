@@ -46,4 +46,13 @@ urlpatterns = [
 
     # Client portal
     path('portal/', views.portal_dashboard, name='portal_dashboard'),
+
+    # AI features
+    path('ai/contacts/<int:pk>/summary/', views.ai_contact_summary, name='ai_contact_summary'),
+    path('ai/contacts/<int:pk>/draft/', views.ai_contact_draft, name='ai_contact_draft'),
+    path('ai/deals/<int:pk>/summary/', views.ai_deal_summary, name='ai_deal_summary'),
+    path('ai/deals/<int:pk>/draft/', views.ai_deal_draft, name='ai_deal_draft'),
+    path('ai/deals/<int:pk>/next-action/', views.ai_deal_next_action, name='ai_deal_next_action'),
+    path('ai/chat/', views.ai_chat, name='ai_chat'),
+    path('ai/chat/ask/', views.ai_chat_ask, name='ai_chat_ask'),
 ]

@@ -1,0 +1,43 @@
+<div class="card">
+  <h3 style="margin-top:0;">✨ AI Assist</h3>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button type="button" class="btn btn-outline btn-sm" onclick="aiRun('summary')">Summarize</button>
+    <button type="button" class="btn btn-outline btn-sm" onclick="aiRun('draft')">Draft Follow-up</button>
+    {% if show_next_action %}
+    <button type="button" class="btn btn-outline btn-sm" onclick="aiRun('next-action')">Suggest Next Action</button>
+    {% endif %}
+  </div>
+  <div id="ai-result" style="margin-top:12px;display:none;">
+    <div id="ai-loading" style="color:var(--text-light);font-size:0.85rem;display:none;">Thinking…</div>
+    <pre id="ai-text" style="white-space:pre-wrap;font-family:inherit;background:#f5f8fa;border:1px solid var(--border);border-radius:5px;padding:12px;font-size:0.87rem;margin:0;"></pre>
+  </div>
+</div>
+
+<script>
+function aiRun(kind) {
+  const urls = {
+    'summary': '{{ ai_summary_url }}',
+    'draft': '{{ ai_draft_url }}',
+    'next-action': '{{ ai_next_action_url|default:"" }}',
+  };
+  const resultBox = document.getElementById('ai-result');
+  const loading = document.getElementById('ai-loading');
+  const textEl = document.getElementById('ai-text');
+  resultBox.style.display = 'block';
+  loading.style.display = 'block';
+  textEl.textContent = '';
+  fetch(urls[kind], {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+  })
+    .then(r => r.json())
+    .then(data => {
+      loading.style.display = 'none';
+      textEl.textContent = data.error ? ('⚠ ' + data.error) : data.text;
+    })
+    .catch(err => {
+      loading.style.display = 'none';
+      textEl.textContent = '⚠ Request failed: ' + err;
+    });
+}
+</script>

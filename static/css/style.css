@@ -190,6 +190,19 @@ table.data-table tr:hover { background: #fbfcfd; }
 .pagination { display: flex; gap: 6px; margin-top: 16px; }
 .pagination a, .pagination span { padding: 6px 11px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.82rem; }
 
+/* Makes a <button> inside a logout <form> look and behave like a plain link */
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: #c6d3e0;
+  cursor: pointer;
+  text-decoration: none;
+}
+.link-button:hover { color: var(--orange); }
+
 /* Print styles (used by the Reports page's Print button and browser Ctrl+P) */
 .print-header { margin-bottom: 18px; }
 .print-header h1 { margin-bottom: 2px; }

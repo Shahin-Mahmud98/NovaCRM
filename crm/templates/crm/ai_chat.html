@@ -1,0 +1,71 @@
+{% extends 'crm/base.html' %}
+{% block title %}AI Assistant{% endblock %}
+{% block content %}
+<div class="page-header"><h1>✨ AI Assistant</h1></div>
+<p style="color:var(--text-light);font-size:0.87rem;margin-top:-8px;">
+  Ask about your deals, tasks, or pipeline. This only sees data you have access to
+  {% if is_manager %}(you're a manager, so it can see the whole team's data){% else %}(only records you own){% endif %}.
+</p>
+
+<div class="card" style="max-width:760px;">
+  <div id="chat-log" style="min-height:200px;max-height:50vh;overflow-y:auto;margin-bottom:14px;"></div>
+  <form id="chat-form" style="display:flex;gap:8px;">
+    <input type="text" id="chat-input" class="form-control" placeholder="e.g. Which open deals are closing this month?" autocomplete="off">
+    <button type="submit" class="btn btn-primary">Ask</button>
+  </form>
+</div>
+
+<script>
+const log = document.getElementById('chat-log');
+const form = document.getElementById('chat-form');
+const input = document.getElementById('chat-input');
+let history = [];
+
+function addBubble(role, text) {
+  const wrap = document.createElement('div');
+  wrap.style.marginBottom = '12px';
+  const label = document.createElement('div');
+  label.textContent = role === 'user' ? 'You' : 'Assistant';
+  label.style.fontWeight = '700';
+  label.style.fontSize = '0.75rem';
+  label.style.color = role === 'user' ? 'var(--text)' : 'var(--teal)';
+  label.style.marginBottom = '2px';
+  const body = document.createElement('div');
+  body.style.whiteSpace = 'pre-wrap';
+  body.style.fontSize = '0.88rem';
+  body.textContent = text;
+  wrap.appendChild(label);
+  wrap.appendChild(body);
+  log.appendChild(wrap);
+  log.scrollTop = log.scrollHeight;
+  return body;
+}
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const question = input.value.trim();
+  if (!question) return;
+  addBubble('user', question);
+  input.value = '';
+  const answerEl = addBubble('assistant', 'Thinking…');
+
+  fetch("{% url 'ai_chat_ask' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+    body: JSON.stringify({ question: question, history: history }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        answerEl.textContent = '⚠ ' + data.error;
+        return;
+      }
+      answerEl.textContent = data.text;
+      history.push({ role: 'user', content: question });
+      history.push({ role: 'assistant', content: data.text });
+      if (history.length > 20) history = history.slice(-20);
+    })
+    .catch(err => { answerEl.textContent = '⚠ Request failed: ' + err; });
+});
+</script>
+{% endblock %}

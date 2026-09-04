@@ -41,4 +41,9 @@
 
   {% include 'crm/_activity_panel.html' with object=contact object_type='contact' %}
 </div>
+
+<div class="detail-grid">
+  <div></div>
+  {% include 'crm/_ai_panel.html' with ai_summary_url=ai_summary_url ai_draft_url=ai_draft_url %}
+</div>
 {% endblock %}

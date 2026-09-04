@@ -8,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum, Q, Count
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -22,6 +22,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 
 from .models import Company, Contact, Deal, PipelineStage, Task, Activity, PortalAccess
 from .forms import CompanyForm, ContactForm, DealForm, TaskForm, ActivityForm
+from . import ai
 
 
 def is_manager(user):
@@ -258,6 +259,8 @@ class ContactDetailView(InternalAccessMixin, OwnerRestrictedMixin, DetailView):
         ctx['tasks'] = self.object.tasks.all()
         ctx['activities'] = self.object.activities.select_related('created_by')[:15]
         ctx['activity_form'] = ActivityForm()
+        ctx['ai_summary_url'] = reverse('ai_contact_summary', args=[self.object.pk])
+        ctx['ai_draft_url'] = reverse('ai_contact_draft', args=[self.object.pk])
         return ctx
 
 
@@ -313,6 +316,9 @@ class DealDetailView(InternalAccessMixin, OwnerRestrictedMixin, DetailView):
         ctx['tasks'] = self.object.tasks.all()
         ctx['activities'] = self.object.activities.select_related('created_by')[:15]
         ctx['activity_form'] = ActivityForm()
+        ctx['ai_summary_url'] = reverse('ai_deal_summary', args=[self.object.pk])
+        ctx['ai_draft_url'] = reverse('ai_deal_draft', args=[self.object.pk])
+        ctx['ai_next_action_url'] = reverse('ai_deal_next_action', args=[self.object.pk])
         return ctx
 
 
@@ -665,3 +671,99 @@ def portal_dashboard(request):
         'won_deal_value': deals.filter(status='won').aggregate(t=Sum('amount'))['t'] or 0,
     }
     return render(request, 'crm/portal_dashboard.html', context)
+
+
+# --------------------------------------------------------------------- AI
+def _accessible_contact_or_404(request, pk):
+    qs = Contact.objects.all() if is_manager(request.user) else Contact.objects.filter(owner=request.user)
+    return get_object_or_404(qs, pk=pk)
+
+
+def _accessible_deal_or_404(request, pk):
+    qs = Deal.objects.all() if is_manager(request.user) else Deal.objects.filter(owner=request.user)
+    return get_object_or_404(qs, pk=pk)
+
+
+@internal_required
+@require_POST
+def ai_contact_summary(request, pk):
+    contact = _accessible_contact_or_404(request, pk)
+    text, error = ai.ask_claude(
+        system=("You are a sales assistant. Summarize this CRM contact's situation in 3-5 concise "
+                "sentences a busy rep can read in 10 seconds. Note deal status and anything needing attention."),
+        messages=[{'role': 'user', 'content': ai.context_for_contact(contact)}],
+    )
+    return JsonResponse({'text': text, 'error': error})
+
+
+@internal_required
+@require_POST
+def ai_contact_draft(request, pk):
+    contact = _accessible_contact_or_404(request, pk)
+    text, error = ai.ask_claude(
+        system=("You are a sales assistant drafting a short follow-up email to this contact, based on the "
+                "CRM context. Under 150 words, warm but professional, reference specifics from the context. "
+                "Output only the email body — no subject line, no preamble, no explanation."),
+        messages=[{'role': 'user', 'content': ai.context_for_contact(contact)}],
+    )
+    return JsonResponse({'text': text, 'error': error})
+
+
+@internal_required
+@require_POST
+def ai_deal_summary(request, pk):
+    deal = _accessible_deal_or_404(request, pk)
+    text, error = ai.ask_claude(
+        system=("You are a sales assistant. Summarize this deal's situation in 3-5 concise sentences a busy "
+                "rep can read in 10 seconds. Note status, momentum, and anything needing attention."),
+        messages=[{'role': 'user', 'content': ai.context_for_deal(deal)}],
+    )
+    return JsonResponse({'text': text, 'error': error})
+
+
+@internal_required
+@require_POST
+def ai_deal_draft(request, pk):
+    deal = _accessible_deal_or_404(request, pk)
+    text, error = ai.ask_claude(
+        system=("You are a sales assistant drafting a short follow-up email about this deal, based on the "
+                "CRM context. Under 150 words, warm but professional, reference specifics from the context. "
+                "Output only the email body — no subject line, no preamble, no explanation."),
+        messages=[{'role': 'user', 'content': ai.context_for_deal(deal)}],
+    )
+    return JsonResponse({'text': text, 'error': error})
+
+
+@internal_required
+@require_POST
+def ai_deal_next_action(request, pk):
+    deal = _accessible_deal_or_404(request, pk)
+    text, error = ai.ask_claude(
+        system=("You are a sales coach. Based on this deal's context, suggest ONE specific next action the "
+                "rep should take right now, in 1-2 sentences, with a brief reason why."),
+        messages=[{'role': 'user', 'content': ai.context_for_deal(deal)}],
+        max_tokens=200,
+    )
+    return JsonResponse({'text': text, 'error': error})
+
+
+@internal_required
+def ai_chat(request):
+    return render(request, 'crm/ai_chat.html', {'is_manager': is_manager(request.user)})
+
+
+@internal_required
+@require_POST
+def ai_chat_ask(request):
+    data = json.loads(request.body or '{}')
+    question = (data.get('question') or '').strip()
+    history = data.get('history') or []
+    if not question:
+        return JsonResponse({'error': 'Please enter a question.'})
+
+    system = ("You are an assistant embedded in a CRM. Answer the user's question using ONLY the CRM data "
+              "context below. If the answer isn't in the context, say so honestly rather than guessing. "
+              "Be concise.\n\nCRM DATA:\n" + ai.context_for_user(request.user, is_manager))
+    messages = history + [{'role': 'user', 'content': question}]
+    text, error = ai.ask_claude(system=system, messages=messages, max_tokens=600)
+    return JsonResponse({'text': text, 'error': error})
