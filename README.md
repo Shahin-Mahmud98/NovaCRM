@@ -157,13 +157,33 @@ git push -u origin main
 
 **3. Create your first user**
 
-Once deployed, open the **Shell** tab for your web service in the Render
-dashboard and run:
-```bash
-python manage.py createsuperuser
+Render's **free tier doesn't include shell access** (that's a paid-plan
+feature), so `python manage.py createsuperuser` isn't available there. Use
+environment variables instead — the project is already set up for this:
+
+1. In the Render dashboard, open your web service → **Environment** tab
+2. Add:
+   ```
+   DJANGO_SUPERUSER_USERNAME=your-username
+   DJANGO_SUPERUSER_PASSWORD=your-password
+   DJANGO_SUPERUSER_EMAIL=you@example.com   (optional)
+   ```
+3. Trigger a redeploy (or it happens automatically after saving env vars)
+
+`build.sh` runs `python manage.py ensure_admin` on every deploy, which
+creates that user as a superuser if it doesn't exist yet — or just updates
+its password if it does. Safe to leave these env vars in place permanently.
+
+**Want demo data too** (sample companies/contacts/deals/tasks)? Also set:
 ```
-(Or run `python manage.py seed_data` instead, to get demo data + the
-`admin`/`admin123` login — recommended only for a demo, not real client data.)
+SEED_DEMO_DATA=true
+```
+This runs `seed_data` on every deploy, which is safe to leave on (existing
+records won't be duplicated).
+
+If you do have shell access (e.g. on a paid plan, or self-hosting), you
+can still just run `python manage.py createsuperuser` or
+`python manage.py seed_data` directly instead.
 
 **4. Visit your live site**
 

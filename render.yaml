@@ -16,6 +16,14 @@ services:
         fromDatabase:
           name: novacrm-db
           property: connectionString
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: SEED_DEMO_DATA
+        value: "false"
 
 databases:
   - name: novacrm-db
